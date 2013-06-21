@@ -16,5 +16,15 @@ mkdir my-new-project && cd $_
 
 Run: `yo resteasy`
 
+## Generators
+
+Available generators:
+
+- resteasy:model name
+- resteasy:model name title:String author:String age:Number
+- resteasy:controller name
+- resteasy:controller name insert list get destroy
+- resteasy:all
+
 ## License
 [MIT License](http://en.wikipedia.org/wiki/MIT_License)
