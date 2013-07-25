@@ -1,5 +1,5 @@
 # Generator-resteasy
-[![Build Status](https://secure.travis-ci.org/RafaelLucio/generator-resteasy.png?branch=master)](https://travis-ci.org/RafaelLucio/generator-resteasy)
+[![Build Status](https://secure.travis-ci.org/3gweb/generator-resteasy.png?branch=master)](https://travis-ci.org/RafaelLucio/generator-resteasy)
 
 A generator for Yeoman.
 

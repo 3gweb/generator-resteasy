@@ -7,7 +7,7 @@ var yeoman = require('yeoman-generator');
 var ResteasyGenerator = module.exports = function ResteasyGenerator(args, options, config) {
 	yeoman.generators.Base.apply(this, arguments);
 
-	this.on('end', function () {
+	this.on('end', function() {
 		this.installDependencies({
 			skipInstall: options['skip-install']
 		});
@@ -25,14 +25,13 @@ ResteasyGenerator.prototype.askFor = function askFor() {
 	console.log(this.yeoman);
 
 	var prompts = [{
-			type: 'confirm',
-			name: 'someOption',
-			message: 'Would you like to enable this option?',
-			default: true
-		}
-	];
+		type: 'confirm',
+		name: 'someOption',
+		message: 'Would you like to enable this option?',
+		default: true
+	}];
 
-	this.prompt(prompts, function (props) {
+	this.prompt(prompts, function(props) {
 		this.someOption = props.someOption;
 
 		cb();
@@ -51,8 +50,26 @@ ResteasyGenerator.prototype.app = function app() {
 	this.mkdir('app/public/stylesheets');
 
 	this.template('app.js', 'app.js');
-	this.template('config/config.js', 'config/config.js');
 	this.template('config/express.js', 'config/express.js');
+};
+
+ResteasyGenerator.prototype.wirteConfig = function writeIndex() {
+	var writeText = [
+		'module.exports = {',
+		'\troot: require(\'path\').normalize(__dirname + \'/..\'),',
+		'\tpublicPath: \'/app/public\',',
+		'\tapp: {',
+		'\t\tname: \'Application-name\',',
+		'\t\tversion: \'0.0.1\'',
+		'\t},',
+		'\tport: 3000,',
+		'\tdb: \'mongodb://localhost/' + this.args[0] + '\',',
+		'\tpathControllers: \'/app/controllers\',',
+		'\tpathModels: \'/app/models\'',
+		'};'
+	];
+
+	this.write('config/config.js', writeText.join('\n'));
 };
 
 ResteasyGenerator.prototype.git = function git() {
@@ -77,6 +94,6 @@ ResteasyGenerator.prototype.travis = function travis() {
 };
 
 ResteasyGenerator.prototype.wirteIndex = function writeIndex() {
-	var writeText = 'Guilherme Féla-da-mãe';
+	var writeText = 'RestEasy Yeoman Generator API';
 	this.write('app/public/index.html', writeText);
 };
