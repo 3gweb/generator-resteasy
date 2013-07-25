@@ -1,57 +1,64 @@
 'use strict';
 var util = require('util');
+var path = require('path');
 var yeoman = require('yeoman-generator');
 
 var ModelGenerator = module.exports = function ModelGenerator(args, options, config) {
+	// By calling `NamedBase` here, we get the argument to the subgenerator call
+	// as `this.name`.
 	yeoman.generators.NamedBase.apply(this, arguments);
-	console.log('You called the model subgenerator with the argument ' + this.name + '.');
+
+	console.log('You called the Model subgenerator with the argument ' + this.name + '.');
 };
 
 util.inherits(ModelGenerator, yeoman.generators.NamedBase);
 
-ModelGenerator.prototype.files = function files() {
-	var args = this.arguments,
-		filename = this.name,
-		modelTextModel = '',
-		newSchema = {},
-		arraySchema = [];
+ModelGenerator.prototype.writeModel = function writeModel() {
+	var nameModel = this.args[0],
+		argument = this.args,
+		endComma = ',';
 
-	var transObject = function(objArray) {
-		var schema = {}
-		for (var i = 1; i < args.length; i++) {
-			var key = args[i].split(':')[0];
-			var value = args[i].substring(key.length + 1);
+	var contentText = [
+			'var RestEasy = require(\'rest-easy\'),',
+			'\t' + nameModel + 'Model = new RestEasy.Model();',
+			'\n' + nameModel + 'Model = new Schema({'
+	];
 
-			schema[key] = value;
-		};
-
-		return transSchema(schema);
-	};
-
-	var transSchema = function(objSchema) {
-		var modelSchema = '{\n',
-			modelSchemaEnd = ',\n',
-			lenNewSchema = 0;
-
-		lenNewSchema = Object.keys(objSchema).length;
-
-		Object.keys(objSchema).forEach(function(key, index) {
-			if (lenNewSchema - 1 === index) {
-				modelSchemaEnd = '';
+	if (argument.length > 1) {
+		for (var i = 1, len = argument.length; i < len; i++) {
+			if (i === len - 1) {
+				contentText.push('\t' + argument[i] + '');
+			} else {
+				contentText.push('\t' + argument[i] + endComma);
 			}
+		};
+	} else {
+		var contentText = [
+				'var RestEasy = require(\'rest-easy\'),',
+				'\t' + nameModel + ' = new RestEasy.Model();',
+				'\n' + nameModel + ' = new Schema({',
+				'\ttitle: String,',
+				'\tauthor: String,',
+				'\tbody: String,',
+				'\tcomments: [{',
+				'\t\t\tbody: String,',
+				'\t\t\tdate: Date',
+				'\t\t}',
+				'\t],',
+				'\tdate: {',
+				'\t\ttype: Date,',
+				'\t\tdefault: Date.now',
+				'\t},',
+				'\thidden: Boolean,',
+				'\tmeta: {',
+				'\t\tvotes: Number,',
+				'\t\tfavs: Number',
+				'\t}'
+		];
+	}
 
-			modelSchema += '\t' + key + ': ' + objSchema[key] + modelSchemaEnd;
-		});
-		modelSchema += '\n}';
+	contentText.push('});');
+	contentText.push('\nmodule.exports = ' + nameModel + ';');
 
-		return modelSchema;
-	};
-
-	newSchema = transObject(args);
-
-	modelTextModel = 'var RestEasy = require(\'rest-easy\');' +
-		'\n\nvar ' + filename + 'Schema = new Schema(' + newSchema + ');' +
-		'\n\nmodule.exports = ' + filename + 'Model;';
-
-	this.write('app/models/' + filename + '.js', modelTextModel);
+	this.write('app/models/' + this.name + '.js', contentText.join('\n'));
 };

@@ -1,84 +1,68 @@
 'use strict';
 var util = require('util');
+var path = require('path');
 var yeoman = require('yeoman-generator');
 
 var ControllerGenerator = module.exports = function ControllerGenerator(args, options, config) {
+	// By calling `NamedBase` here, we get the argument to the subgenerator call
+	// as `this.name`.
 	yeoman.generators.NamedBase.apply(this, arguments);
+
 	console.log('You called the controller subgenerator with the argument ' + this.name + '.');
 };
 
 util.inherits(ControllerGenerator, yeoman.generators.NamedBase);
 
-ControllerGenerator.prototype.files = function files() {
-	var args = this.arguments,
-		filename = this.name,
-		modelTextController = '',
-		modelTextControllerCustom = '',
-		modelsRoutes = ['insert', 'destroy', 'list', 'get'],
-		modelRoutes,
-		modelsTextRoutes = [],
-		findModelText = '';
+ControllerGenerator.prototype.writeController = function writeController() {
+	var nameController = this.args[0],
+		argument = this.args;
 
-	modelsTextRoutes = {
-		insert: '\n\t\'insert\': function (req, res) {},',
-		destroy: '\n\t\'destroy\': function (req, res) {},',
-		list: '\n\t\'list\': function (req, res) {},',
-		get: '\n\t\'get\': function (req, res) {},',
+	var contentTextFindAll = '\n' + nameController + '.get(\'/' + nameController + '\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentTextFindById = '\n' + nameController + '.get(\'/' + nameController + '/:id\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentTextPost = '\n' + nameController + '.post(\'/' + nameController + '\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentTextPut = '\n' + nameController + '.put(\'/' + nameController + '/:id\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentTextDelete = '\n' + nameController + '.delete(\'/' + nameController + '/:id\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentText = [
+			'var RestEasy = require(\'rest-easy\'),',
+			'\t' + nameController + ' = new RestEasy.Controller();'
+	];
+
+	var arrayMap = {
+		'list': contentTextFindAll,
+		'get': contentTextFindById,
+		'post': contentTextPost,
+		'put': contentTextPut,
+		'delete': contentTextDelete
 	};
 
-	modelTextController = 'var ' + filename + ' = require(\'model\');' +
-		'\n\nvar ' + filename + 'Controller = new EasyRestController(app, {' +
-		'\n\t\'insert\': function (req, res) {},' +
-		'\n\t\'update\': function (req, res) {},' +
-		'\n\t\'destroy\': function (req, res) {},' +
-		'\n\t\'list\': function (req, res) {},' +
-		'\n\t\'get\': function (req, res) {},' +
-		'\n\t\'get /customSearch\': function (req, res) {' +
-		'\n\t\tres.t = 1;' +
-		'\n\t}' +
-		'\n});' +
-		'\n\nmodule.exports = ' + filename + 'Controller;';
-
-	var customRoutes = function(args) {
-		args.shift();
-		var breaking = false;
-		var errors = [];
-		args.forEach(function(arg) {
-			if (modelsRoutes.indexOf(arg) === -1) {
-				errors.push('Erro argument: ' + arg + ' invalid!');
+	if (argument.length > 1) {
+		for (var i = 1; i < argument.length; i++) {
+			if (arrayMap['' + argument[i] + ''] !== undefined) {
+				contentText.push(arrayMap['' + argument[i] + '']);
 			} else {
-				findModelText += modelsTextRoutes[arg];
+				console.warn('\nArguiment ' + argument[i] + ' incorrect!!');
 			}
-		});
-
-		if (errors.length > 0) {
-			errors.push('Arguments valids: insert update destroy list get\n');
-			errors.forEach(function(data) {
-				console.warn(data);
-			});
-			return;
-		}
-
-		modelTextControllerCustom = 'var ' + filename + ' = require(\'model\');' +
-			'\n\nvar ' + filename + 'Controller = new EasyRestController(app, {' +
-			'' + findModelText + '' +
-			'\n\t\'get /customSearch\': function (req, res) {' +
-			'\n\t\tres.t = 1;' +
-			'\n\t}' +
-			'\n});' +
-			'\n\nmodule.exports = ' + filename + 'Controller;';
-
-		return modelTextControllerCustom;
-	};
-
-	modelRoutes = customRoutes(args);
-
-	console.log(modelRoutes);
-	if (args.length === 0) {
-		modelRoutes = modelTextController;
-		this.write('app/controllers/' + filename + '.js', modelRoutes);
-	} else if (modelRoutes !== undefined) {
-		console.log(modelRoutes);
-		this.write('app/controllers/' + filename + '.js', modelRoutes);
+		};
+	} else {
+		contentText.push(contentTextFindAll, contentTextFindById, contentTextPost, contentTextPut, contentTextDelete);
 	}
+
+	contentText.push('\nmodule.exports = ' + nameController + ';');
+
+	this.write('app/controllers/' + this.name + '.js', contentText.join('\n'));
 };

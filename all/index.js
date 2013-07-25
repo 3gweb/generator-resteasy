@@ -1,48 +1,84 @@
 'use strict';
 var util = require('util');
+var path = require('path');
 var yeoman = require('yeoman-generator');
 
 var AllGenerator = module.exports = function AllGenerator(args, options, config) {
+	// By calling `NamedBase` here, we get the argument to the subgenerator call
+	// as `this.name`.
 	yeoman.generators.NamedBase.apply(this, arguments);
+
 	console.log('You called the all subgenerator with the argument ' + this.name + '.');
 };
 
 util.inherits(AllGenerator, yeoman.generators.NamedBase);
 
-AllGenerator.prototype.files = function files() {
-	var args = this.arguments,
-		filename = this.name,
-		modelTextController = '',
-		modelTextModel = '';
+AllGenerator.prototype.writeController = function writeController() {
+	var nameController = this.args[0];
 
-	modelTextController = 'var ' + filename + ' = require(\''+ filename +'\');' +
-		'\n\nvar ' + filename + 'Controller = new EasyRestController(app, {' +
-		'\n\t\'insert\': function (req, res) {},' +
-		'\n\t\'update\': function (req, res) {},' +
-		'\n\t\'destroy\': function (req, res) {},' +
-		'\n\t\'list\': function (req, res) {},' +
-		'\n\t\'get\': function (req, res) {},' +
-		'\n\t\'get /customSearchUser\': function (req, res) {' +
-		'\n\t\tres.t = 1;' +
-		'\n\t}' +
-		'\n});' +
-		'\n\nmodule.exports = ' + filename + 'Controller;';
+	var contentTextFindAll = '\n' + nameController + '.get(\'/' + nameController + '\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
 
-	modelTextModel = 'var RestEasy = require(\'rest-easy\');' +
-		'\n\nvar ' + filename + 'Schema = new Schema({' +
-		'\n\ttitle: String,' +
-		'\n\tauthor: String,' +
-		'\n\tage: Number,' +
-		'\n\tcomments: [{ body: String, date: Date }],' +
-		'\n\tdate: { type: Date, default: Date.now },' +
-		'\n\thidden: Boolean,' +
-		'\n\tmeta: {' +
-    	'\n\t\tvotes: Number,' +
-    	'\n\t\tfavs:  Number' +
-  		'\n\t}' +
-		'\n});' +
-		'\n\nmodule.exports = ' + filename + 'Model;';
+	var contentTextFindById = '\n' + nameController + '.get(\'/' + nameController + '/:id\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
 
-	this.write('app/controllers/' + filename + '.js', modelTextController);
-	this.write('app/models/' + filename + '.js', modelTextModel);
+	var contentTextPost = '\n' + nameController + '.post(\'/' + nameController + '\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentTextPut = '\n' + nameController + '.put(\'/' + nameController + '/:id\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentTextDelete = '\n' + nameController + '.delete(\'/' + nameController + '/:id\', function (req, res) {\n' +
+		'\tres.json(\'ok!\');' +
+		'\n});';
+
+	var contentText = [
+			'var RestEasy = require(\'rest-easy\'),',
+			'\t' + nameController + ' = new RestEasy.Controller();'
+	];
+
+	contentText.push(contentTextFindAll);
+	contentText.push(contentTextFindById);
+	contentText.push(contentTextPost);
+	contentText.push(contentTextPut);
+	contentText.push(contentTextDelete);
+
+	contentText.push('\nmodule.exports = ' + nameController + ';');
+
+	this.write('app/controllers/' + this.name + '.js', contentText.join('\n'));
+};
+
+AllGenerator.prototype.writeModel = function writeModel() {
+	var nameModel = this.args[0];
+
+	var contentText = [
+			'var RestEasy = require(\'rest-easy\');',
+			'\nvar ' + nameModel + ' = new RestEasy.Model(\'' + nameModel + '\', {',
+			'\ttitle: String,',
+			'\tauthor: String,',
+			'\tbody: String,',
+			'\tcomments: [{',
+			'\t\t\tbody: String,',
+			'\t\t\tdate: Date',
+			'\t\t}',
+			'\t],',
+			'\tdate: {',
+			'\t\ttype: Date,',
+			'\t\tdefault: Date.now',
+			'\t},',
+			'\thidden: Boolean,',
+			'\tmeta: {',
+			'\t\tvotes: Number,',
+			'\t\tfavs: Number',
+			'\t}',
+			'});'
+	];
+
+	contentText.push('\nmodule.exports = ' + nameModel + ';');
+
+	this.write('app/models/' + this.name + '.js', contentText.join('\n'));
 };

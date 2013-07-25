@@ -18,28 +18,30 @@ var ResteasyGenerator = module.exports = function ResteasyGenerator(args, option
 
 util.inherits(ResteasyGenerator, yeoman.generators.Base);
 
-// ResteasyGenerator.prototype.askFor = function askFor() {
-// 	var cb = this.async();
-// 	// have Yeoman greet the user.
-// 	console.log(this.yeoman);
-// 	var prompts = [{
-// 			type: 'confirm',
-// 			name: 'someOption',
-// 			message: 'Would you like to enable this option?',
-// 			default: true
-// 		}
-// 	];
-// 	this.prompt(prompts, function(props) {
-// 		this.someOption = props.someOption;
-// 		cb();
-// 	}.bind(this));
-// };
+ResteasyGenerator.prototype.askFor = function askFor() {
+	var cb = this.async();
+
+	// have Yeoman greet the user.
+	console.log(this.yeoman);
+
+	var prompts = [{
+		type: 'confirm',
+		name: 'someOption',
+		message: 'Would you like to enable this option?',
+		default: true
+	}];
+
+	this.prompt(prompts, function(props) {
+		this.someOption = props.someOption;
+
+		cb();
+	}.bind(this));
+};
 
 ResteasyGenerator.prototype.app = function app() {
 	this.mkdir('app');
-	this.mkdir('app/views');
+	this.mkdir('config');
 	this.mkdir('app/models');
-	this.mkdir('app/config');
 	this.mkdir('app/controllers');
 
 	this.mkdir('app/public');
@@ -47,19 +49,27 @@ ResteasyGenerator.prototype.app = function app() {
 	this.mkdir('app/public/javascripts');
 	this.mkdir('app/public/stylesheets');
 
-	this.copy('app/app.js', 'app/app.js');
-
-	this.copy('app/views/index.jade', 'app/views/index.jade');
-	this.copy('app/views/layout.jade', 'app/views/layout.jade');
-
-	this.copy('app/config/config.js', 'app/config/config.js');
-	this.copy('app/config/express.js', 'app/config/express.js');
-	this.copy('app/config/mongoose.js', 'app/config/mongoose.js');
+	this.template('app.js', 'app.js');
+	this.template('config/express.js', 'config/express.js');
 };
 
-ResteasyGenerator.prototype.bower = function bower() {
-	this.copy('bowerrc', '.bowerrc');
-	this.copy('_bower.json', 'bower.json');
+ResteasyGenerator.prototype.wirteConfig = function writeIndex() {
+	var writeText = [
+		'module.exports = {',
+		'\troot: require(\'path\').normalize(__dirname + \'/..\'),',
+		'\tpublicPath: \'/app/public\',',
+		'\tapp: {',
+		'\t\tname: \'Application-name\',',
+		'\t\tversion: \'0.0.1\'',
+		'\t},',
+		'\tport: 3000,',
+		'\tdb: \'mongodb://localhost/' + this.args[0] + '\',',
+		'\tpathControllers: \'/app/controllers\',',
+		'\tpathModels: \'/app/models\'',
+		'};'
+	];
+
+	this.write('config/config.js', writeText.join('\n'));
 };
 
 ResteasyGenerator.prototype.git = function git() {
@@ -71,11 +81,19 @@ ResteasyGenerator.prototype.editorConfig = function editorConfig() {
 	this.copy('editorconfig', '.editorconfig');
 };
 
-ResteasyGenerator.prototype.packageFiles = function() {
-	this.template('_config.json', 'config.json');
-	this.template('_package.json', 'package.json');
+ResteasyGenerator.prototype.jshint = function jshint() {
+	this.copy('jshintrc', '.jshintrc');
 };
 
-ResteasyGenerator.prototype.projectfiles = function projectfiles() {
-	this.copy('jshintrc', '.jshintrc');
+ResteasyGenerator.prototype.packageFiles = function packageFiles() {
+	this.copy('_package.json', 'package.json');
+};
+
+ResteasyGenerator.prototype.travis = function travis() {
+	this.copy('travis.yml', '.travis.yml');
+};
+
+ResteasyGenerator.prototype.wirteIndex = function writeIndex() {
+	var writeText = 'RestEasy Yeoman Generator API';
+	this.write('app/public/index.html', writeText);
 };
