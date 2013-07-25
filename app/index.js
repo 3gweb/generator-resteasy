@@ -54,7 +54,7 @@ ResteasyGenerator.prototype.app = function app() {
 };
 
 ResteasyGenerator.prototype.wirteConfig = function writeIndex() {
-	var mongoConnect = this.args[0] || 'mondo';
+	var mongoConnect = this.args[0] || 'mongo';
 	var writeText = [
 		'module.exports = {',
 		'\troot: require(\'path\').normalize(__dirname + \'/..\'),',
