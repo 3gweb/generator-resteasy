@@ -54,6 +54,7 @@ ResteasyGenerator.prototype.app = function app() {
 };
 
 ResteasyGenerator.prototype.wirteConfig = function writeIndex() {
+	var mongoConnect = this.args[0] || 'mongo';
 	var writeText = [
 		'module.exports = {',
 		'\troot: require(\'path\').normalize(__dirname + \'/..\'),',
@@ -63,7 +64,7 @@ ResteasyGenerator.prototype.wirteConfig = function writeIndex() {
 		'\t\tversion: \'0.0.1\'',
 		'\t},',
 		'\tport: 3000,',
-		'\tdb: \'mongodb://localhost/' + this.args[0] + '\',',
+		'\tdb: \'mongodb://localhost/' + mongoConnect + '\',',
 		'\tpathControllers: \'/app/controllers\',',
 		'\tpathModels: \'/app/models\'',
 		'};'
